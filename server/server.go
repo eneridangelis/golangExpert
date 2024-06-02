@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -71,6 +72,7 @@ func HandleGetExchangeRate(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Printf("error: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -99,6 +101,7 @@ func HandleGetExchangeRate(w http.ResponseWriter, r *http.Request) {
 
 	err = InsertExchangeRate(ctx, db, exchangeRateDB)
 	if err != nil {
+		log.Printf("error: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
