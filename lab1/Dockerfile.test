@@ -1,0 +1,20 @@
+# Use uma imagem base com Go e Curl
+FROM golang:1.20
+
+# Defina o diretório de trabalho
+WORKDIR /app
+
+# Copie o código-fonte e os arquivos de teste para o contêiner
+COPY . .
+
+# Instale dependências para o teste
+RUN go get -u ./...
+
+# Compile o aplicativo
+RUN go build -o app .
+
+# Compile o teste
+RUN go test -v > result.log; tail -n 10 result.log
+
+# Defina o ponto de entrada
+ENTRYPOINT ["go", "test", "-v"]
