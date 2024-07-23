@@ -5,13 +5,13 @@
 Build a imagem `docker` do projeto:
 
 ```sh
-docker run -it --entrypoint /bin/sh loadtest
+docker build -t test .
 ```
 
 Rode o projeto dentro do container passando as flags:
 
 ```sh
-docker run loadtest --url=https://httpbin.org/get --requests=1000 --concurrency=10
+docker run test --url=https://httpbin.org/get --requests=1000 --concurrency=10
 ```
 
 O relatório será gerado no próprio terminal.
