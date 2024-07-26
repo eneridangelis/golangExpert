@@ -2,23 +2,11 @@
 
 ## Como rodar o projeto:
 
-Use o Docker Compose para subir o Redis, rodando o comando abaixo na pasta raiz:
+Use o Docker Compose para subir o Redis e a aplicação, rodando o comando abaixo na pasta raiz:
 
 ```sh
-docker-compose up -d
+docker-compose up --build
 ```
-
-Instale as dependências do projeto com o seguinte comando:
-
-```sh
-go mod tidy
-```
-
-Para executar a aplicação:
-
-```sh
-go run main.go
-````
 
 Para fazer uma requisição, utilizando o `curl`, existem as seguintes formas:
 
