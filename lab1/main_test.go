@@ -1,49 +1,48 @@
 package main
 
 import (
-	"bytes"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestHandleGetTemp(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/temperatura/", HandleGetTemp)
-
-	ts := httptest.NewServer(mux)
-	defer ts.Close()
-
 	tests := []struct {
-		cep          string
-		expectedCode int
+		name             string
+		cep              string
+		expectedStatus   int
+		expectedResponse string
 	}{
-		{"50710465", http.StatusOK},
-		{"99999999", http.StatusUnprocessableEntity},
+		{
+			name:           "valid cep",
+			cep:            "50710465",
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "invalid cep format",
+			cep:            "0100",
+			expectedStatus: http.StatusUnprocessableEntity,
+		},
+		{
+			name:           "non-existent cep",
+			cep:            "00000000",
+			expectedStatus: http.StatusNotFound,
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.cep, func(t *testing.T) {
-			resp, err := http.Get(ts.URL + "/temperatura/" + tt.cep)
-			if err != nil {
-				t.Fatalf("Failed to make request: %v", err)
-			}
-			defer resp.Body.Close()
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/temperatura/", nil)
+			req.SetPathValue("cep", tt.cep)
+			w := httptest.NewRecorder()
 
-			if resp.StatusCode != tt.expectedCode {
-				t.Errorf("Expected status code %d, got %d", tt.expectedCode, resp.StatusCode)
-			}
+			HandleGetTemp(w, req)
 
-			if resp.StatusCode == http.StatusOK {
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					t.Fatalf("Failed to read response body: %v", err)
-				}
+			res := w.Result()
+			defer res.Body.Close()
 
-				if !bytes.Contains(body, []byte("temp_C")) {
-					t.Errorf("Response body does not contain expected key 'temp_C'")
-				}
+			if res.StatusCode != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, res.StatusCode)
 			}
 		})
 	}

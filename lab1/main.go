@@ -58,14 +58,13 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep), nil)
 	if err != nil {
-		http.Error(w, "can not find zipcode", http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Printf("error: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "can not find zipcode", http.StatusNotFound)
 		return
 	}
 
@@ -82,7 +81,13 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if cepJson.Localidade == "" {
+		http.Error(w, "can not find zipcode", http.StatusNotFound)
+		return
+	}
+
 	req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://api.weatherapi.com/v1/current.json?key=%s&q=%s&aqi=no", apiKey, cepJson.Localidade), nil)
+	log.Printf(req.URL.String())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
