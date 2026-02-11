@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
+	"net/url"
 	"regexp"
 )
 
@@ -81,12 +83,21 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if cepJson.Localidade == "" {
+	if cepJson.Localidade == "" { // [ene] isso tá ok??
 		http.Error(w, "can not find zipcode", http.StatusNotFound)
 		return
 	}
 
-	req, err = http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://api.weatherapi.com/v1/current.json?key=%s&q=%s&aqi=no", apiKey, cepJson.Localidade), nil)
+	baseURL := "http://api.weatherapi.com/v1/current.json"
+
+	params := url.Values{}
+	params.Add("key", apiKey)
+	params.Add("q", cepJson.Localidade)
+	params.Add("aqi", "no")
+
+	finalURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+
+	req, err = http.NewRequestWithContext(ctx, "GET", finalURL, nil)
 	log.Printf(req.URL.String())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -114,9 +125,9 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := TempResponse{
-		TempC: tempJson.Current.TempC,
-		TempF: tempJson.Current.TempF,
-		TempK: tempJson.Current.TempC + 273.15,
+		TempC: roundToOneDecimal(tempJson.Current.TempC),
+		TempF: roundToOneDecimal(tempJson.Current.TempF),
+		TempK: roundToOneDecimal(tempJson.Current.TempC + 273.15),
 	}
 
 	tempResponse, err := json.Marshal(response)
@@ -131,4 +142,8 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 func ValidaCEP(cep string) bool {
 	regex := regexp.MustCompile(`^\d{8}$`)
 	return regex.MatchString(cep)
+}
+
+func roundToOneDecimal(val float64) float64 {
+	return math.Round(val*10) / 10
 }
