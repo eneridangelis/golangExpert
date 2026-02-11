@@ -28,6 +28,7 @@ type Cep struct {
 	Gia         string `json:"gia"`
 	Ddd         string `json:"ddd"`
 	Siafi       string `json:"siafi"`
+	Erro        bool   `json:"erro,string"`
 }
 
 type Temp struct {
@@ -83,7 +84,7 @@ func HandleGetTemp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if cepJson.Localidade == "" { // [ene] isso tá ok??
+	if cepJson.Erro || cepJson.Localidade == "" {
 		http.Error(w, "can not find zipcode", http.StatusNotFound)
 		return
 	}
