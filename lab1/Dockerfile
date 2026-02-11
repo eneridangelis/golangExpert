@@ -1,9 +1,9 @@
-FROM golang:1.22.0 
+FROM golang:1.22.0 as builder
 WORKDIR /app
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cloudrun
 
-RUN go build -o cloudrun
-
-EXPOSE 8080
-
-CMD ["/app/cloudrun"]
+From scratch
+WORKDIR /app
+COPY --from=builder /app/cloudrun .
+ENTRYPOINT ["./cloudrun"]
