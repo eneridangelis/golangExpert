@@ -18,13 +18,14 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 
-	redisClient := limiter.NewRedisClient(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+	redisStrategy := limiter.NewRedisStrategy(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+	defer redisStrategy.Close()
 
 	e := echo.New()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(limiter.RateLimiterMiddleware(redisClient))
+	e.Use(limiter.RateLimiterMiddleware(redisStrategy))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")

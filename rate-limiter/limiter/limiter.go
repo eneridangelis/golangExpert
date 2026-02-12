@@ -5,11 +5,10 @@ import (
 
 	"github.com/eneridangelis/golangExpert/rate-limiter/config"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 )
 
-func RateLimiterMiddleware(client *redis.Client) echo.MiddlewareFunc {
+func RateLimiterMiddleware(strategy RepositoryStrategy) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			ip := c.RealIP()
@@ -26,7 +25,7 @@ func RateLimiterMiddleware(client *redis.Client) echo.MiddlewareFunc {
 				limit = config.GetEnvAsInt("DEFAULT_IP_LIMIT", 10)
 			}
 
-			count, err := IncrementRequestCount(client, key, 1)
+			count, err := strategy.IncrementAndGet(key, 1)
 			if err != nil {
 				return err
 			}
