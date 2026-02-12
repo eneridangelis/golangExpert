@@ -21,10 +21,13 @@ func setupTest(t *testing.T) (*echo.Echo, *redis.Client) {
 	}
 
 	e := echo.New()
+
+	strategy := limiter.NewRedisStrategy(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+	e.Use(limiter.RateLimiterMiddleware(strategy))
+
 	client := redis.NewClient(&redis.Options{
 		Addr: os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 	})
-	e.Use(limiter.RateLimiterMiddleware(client))
 
 	client.FlushAll(client.Context())
 

@@ -38,7 +38,3 @@ func (rs *RedisStrategy) IncrementAndGet(key string, expirationSeconds int) (int
 func (rs *RedisStrategy) Close() error {
 	return rs.client.Close()
 }
-
-func GetRateLimitKey(prefix, identifier string) string {
-	return prefix + ":" + identifier
-}
